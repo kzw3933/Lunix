@@ -35,8 +35,9 @@ env:
 
 
 kernel:
-	echo Platform: $(BOARD)
-	cargo build $(MODE_ARG)
+	@cd ../user && make build
+	@echo Platform: $(BOARD)
+	@cargo build $(MODE_ARG)
 
 $(KERNEL_BIN): kernel
 	@$(OBJCOPY) $(KERNEL_ELF) --strip-all -O binary $@
