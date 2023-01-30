@@ -1,6 +1,6 @@
 mod context;
 
-use crate::batch::run_next_app;
+use crate::multiprog::run_next_app;
 use crate::syscall::syscall;
 
 use core::arch::global_asm;
