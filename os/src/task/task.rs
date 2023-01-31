@@ -1,5 +1,7 @@
+use super::TaskContext;
 
-#[derive(Copy, Clone, Partial)]
+
+#[derive(Copy, Clone, PartialEq)]
 pub enum TaskStatus {
     UnInit,
     Ready,

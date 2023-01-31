@@ -1,7 +1,7 @@
 mod context;
 mod switch;
 
-#[allow(clipy::module_inception)]
+#[allow(clippy::module_inception)]
 mod task;
 
 use crate::config::MAX_APP_NUM;
@@ -102,7 +102,7 @@ impl TaskManager {
                 )
             }
         } else {
-            panic!("All applications completed!");
+            println!("All applications completed!");
             shutdown();
         }
     }
