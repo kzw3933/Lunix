@@ -1,9 +1,25 @@
+mod context;
+mod switch;
+
+#[allow(clipy::module_inception)]
+mod task;
+
+use crate::config::MAX_APP_NUM;
+use crate::loader::{get_num_app, init_app_cx};
+use crate::sync::UPSafeCell;
+use lazy_static::*;
+use switch::__switch;
+use task::{TaskControlBlock, TaskStatus};
+use crate::sbi::shutdown;
+
+pub use context::TaskContext;
+
 pub struct TaskManager {
     num_app: usize,
     inner: UPSafeCell<TaskManagerInner>,
 }
 
-struct TaskManagerInner {
+pub struct TaskManagerInner {
     tasks: [TaskControlBlock; MAX_APP_NUM],
     current_task: usize
 }
@@ -11,23 +27,22 @@ struct TaskManagerInner {
 lazy_static! {
     pub static ref TASK_MANAGER: TaskManager = {
         let num_app = get_num_app();
-        let mut tasks = [
-            TaskControlBlock {
+        let mut tasks = [TaskControlBlock {
                 task_cx: TaskContext::zero_init(),
                 task_status: TaskStatus::UnInit,
-            };
-            MAX_APP_NUM
-        ];
+            };MAX_APP_NUM];
         for i in 0..num_app {
             tasks[i].task_cx = TaskContext::goto_restore(init_app_cx(i));
             tasks[i].task_status = TaskStatus::Ready;
         }
         TaskManager {
             num_app,
-            inner: unsafe { UPSafeCell::new(TaskManagerInner {
-                tasks,
-                current_task: 0
-            })}
+            inner: unsafe { 
+                UPSafeCell::new(TaskManagerInner {
+                    tasks,
+                    current_task: 0
+                })
+            }
         }
     };
 }
@@ -60,13 +75,13 @@ pub fn run_first_task() {
 
 impl TaskManager {
     fn mark_current_suspended(&self) {
-        let mut inner = self.inner.borrow_mut();
+        let mut inner = self.inner.exclusive_access();
         let current = inner.current_task;
         inner.tasks[current].task_status = TaskStatus::Ready;
     }
 
     fn mark_current_exited(&self) {
-        let mut inner = self.inner.borrow_mut();
+        let mut inner = self.inner.exclusive_access();
         let current = inner.current_task;
         inner.tasks[current].task_status = TaskStatus::Exited;
     }
@@ -88,6 +103,7 @@ impl TaskManager {
             }
         } else {
             panic!("All applications completed!");
+            shutdown();
         }
     }
 

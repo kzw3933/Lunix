@@ -1,6 +1,5 @@
 mod context;
 
-use crate::multiprog::run_next_app;
 use crate::syscall::syscall;
 
 use core::arch::global_asm;
@@ -34,11 +33,11 @@ pub fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
         Trap::Exception(Exception::StoreFault) |
         Trap::Exception(Exception::StorePageFault) => {
             println!("[kernel] PageFault in application, kernel killed it.");
-            run_next_app();
+            panic!("[kernel] cannot continue!");
         }
         Trap::Exception(Exception::IllegalInstruction) => {
             println!("[kernel] Illegal Instruction in application, kernel killed it.");
-            run_next_app();
+            panic!("[kernel] cannot continue!");
         } 
         _ => {
             panic!("Unsupported trap {:?}, stval = {:#?}", scause.cause(), stval);

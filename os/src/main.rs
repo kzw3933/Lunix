@@ -5,14 +5,14 @@
 use core::arch::global_asm;
 #[macro_use]
 mod console;
-pub mod multiprog;
 mod lang_items;
 mod sbi;
 mod sync;
-pub mod syscall;
-pub mod trap;
 mod config;
 mod loader;
+pub mod syscall;
+pub mod trap;
+pub mod task;
 
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.S"));
@@ -36,7 +36,8 @@ pub fn rust_main() -> ! {
     clear_bss();
     println!("[kernel] Hello, world!");
     trap::init();
-    multiprog::init();
-    multiprog::run_next_app();
+    loader::load_apps();
+    task::run_first_task();
+    panic!("Unreachable in rust_main!");
 }
 
