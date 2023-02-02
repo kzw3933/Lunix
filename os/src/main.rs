@@ -1,8 +1,13 @@
 #![no_main]
 #![no_std]
 #![feature(panic_info_message)]
+#![feature(alloc_error_handler)]
 
 use core::arch::global_asm;
+
+#[macro_use] 
+extern crate bitflags;
+extern crate alloc;
 #[macro_use]
 mod console;
 mod lang_items;
@@ -10,10 +15,12 @@ mod sbi;
 mod sync;
 mod config;
 mod loader;
+mod timer;
+mod mm;
 pub mod syscall;
 pub mod trap;
 pub mod task;
-mod timer;
+
 
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.S"));
@@ -36,8 +43,10 @@ pub fn rust_main() -> ! {
 
     clear_bss();
     println!("[kernel] Hello, world!");
+    mm::init();
+    println!("[kernel] back to world!");
+    mm::remap_test();
     trap::init();
-    loader::load_apps();
     trap::enable_timer_interrupt();
     timer::set_next_trigger();
     task::run_first_task();
