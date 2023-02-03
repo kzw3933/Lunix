@@ -158,8 +158,7 @@ impl MemorySet {
         let mut max_end_vpn = VirtPageNum(0);
         for i in 0..ph_count {
             let ph = elf.program_header(i).unwrap();
-            // if ph.get_type().unwrap() == xmas_elf::program::Type::Load 
-            {
+            if ph.get_type().unwrap() == xmas_elf::program::Type::Load {
                 let start_va: VirtAddr = (ph.virtual_addr() as usize).into();
                 let end_va : VirtAddr = ((ph.virtual_addr() + ph.mem_size()) as usize).into();
                 let mut map_perm = MapPermission::U;
@@ -174,14 +173,12 @@ impl MemorySet {
                     map_perm
                 );
                 max_end_vpn = map_area.vpn_range.get_end();
-                println!("{:#?}*********{:#?}-------------{:#?}oooooooooooooo{}", start_va, end_va, max_end_vpn, ph_count);
-                // memory_set.push(
-                //     map_area,
-                //     Some(&elf.input[ph.offset() as usize..(ph.offset() + ph.file_size()) as usize]) 
-                // );
+                memory_set.push(
+                    map_area,
+                    Some(&elf.input[ph.offset() as usize..(ph.offset() + ph.file_size()) as usize]) 
+                );
             }
         }
-        println!("jdfjgdkdfg");
         let max_end_va: VirtAddr = max_end_vpn.into();
         let mut user_stack_bottom: usize = max_end_va.into();
         user_stack_bottom += PAGE_SIZE;
