@@ -1,4 +1,4 @@
-use super::{frame_alloc, FrameTracker, page_table};
+use super::{frame_alloc, FrameTracker};
 use super::{PTEFlags, PageTableEntry, PageTable};
 use super::{PhysAddr, PhysPageNum, VirtAddr, VirtPageNum};
 use super::{StepByOne, VPNRange};
@@ -135,6 +135,15 @@ impl MemorySet {
             MapType::Idential,
             MapPermission::R | MapPermission::W
         ), None);
+        println!("mapping memory-mapped registers");
+        for pair in MMIO {
+            memory_set.push(MapArea::new(
+                (*pair).0.into(),
+                ((*pair).0 + (*pair).1).into(),
+                MapType::Idential,
+                MapPermission::R | MapPermission::W
+            ),None);
+        }
         memory_set
     }
 
@@ -149,7 +158,8 @@ impl MemorySet {
         let mut max_end_vpn = VirtPageNum(0);
         for i in 0..ph_count {
             let ph = elf.program_header(i).unwrap();
-            if ph.get_type().unwrap() == xmas_elf::program::Type::Load {
+            // if ph.get_type().unwrap() == xmas_elf::program::Type::Load 
+            {
                 let start_va: VirtAddr = (ph.virtual_addr() as usize).into();
                 let end_va : VirtAddr = ((ph.virtual_addr() + ph.mem_size()) as usize).into();
                 let mut map_perm = MapPermission::U;
@@ -164,12 +174,14 @@ impl MemorySet {
                     map_perm
                 );
                 max_end_vpn = map_area.vpn_range.get_end();
-                memory_set.push(
-                    map_area,
-                    Some(&elf.input[ph.offset() as usize..(ph.offset() + ph.file_size()) as usize]) 
-                );
+                println!("{:#?}*********{:#?}-------------{:#?}oooooooooooooo{}", start_va, end_va, max_end_vpn, ph_count);
+                // memory_set.push(
+                //     map_area,
+                //     Some(&elf.input[ph.offset() as usize..(ph.offset() + ph.file_size()) as usize]) 
+                // );
             }
         }
+        println!("jdfjgdkdfg");
         let max_end_va: VirtAddr = max_end_vpn.into();
         let mut user_stack_bottom: usize = max_end_va.into();
         user_stack_bottom += PAGE_SIZE;
@@ -235,7 +247,7 @@ impl MapArea {
         let pte_flags = PTEFlags::from_bits(self.map_perm.bits).unwrap();
         page_table.map(vpn, ppn, pte_flags);
     }
-
+    #[allow(unused)]
     pub fn unmap_one(&mut self, page_table: &mut PageTable, vpn: VirtPageNum) {
         match self.map_type {
             MapType::Framed => {
@@ -251,7 +263,7 @@ impl MapArea {
             self.map_one(page_table, vpn);
         }
     }
-
+    #[allow(unused)]
     pub fn unmap(&mut self, page_table: &mut PageTable) {
         for vpn in self.vpn_range {
             self.unmap_one(page_table, vpn);

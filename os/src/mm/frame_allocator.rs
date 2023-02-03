@@ -2,7 +2,7 @@ use super::{PhysAddr, PhysPageNum};
 use crate::config::MEMORY_END;
 use crate::sync::UPSafeCell;
 use alloc::vec::Vec;
-use core::fmt::{self, Debug, Formatter};
+use core::fmt::{self, Debug};
 use lazy_static::*;
 
 

@@ -9,7 +9,6 @@ use crate::sync::UPSafeCell;
 use crate::trap::TrapContext;
 use alloc::vec::Vec;
 use lazy_static::*;
-use riscv::register::mcause::Trap;
 use switch::__switch;
 use task::{TaskControlBlock, TaskStatus};
 use crate::sbi::shutdown;

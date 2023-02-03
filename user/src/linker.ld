@@ -18,6 +18,7 @@ SECTIONS
     .data : {
         *(.data .data.*)
     }
+    . = ALIGN(4K);
     .bss : {
         *(.bss .bss.*)
     }

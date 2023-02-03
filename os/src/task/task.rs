@@ -6,7 +6,6 @@ use crate::trap::{trap_handler, TrapContext};
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum TaskStatus {
-    UnInit,
     Ready,
     Running,
     Exited
